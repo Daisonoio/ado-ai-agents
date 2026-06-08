@@ -148,4 +148,4 @@ ado-ai-agents/
 
 Luca — Senior .NET Backend Developer, AI-integrated systems  
 Insurance and financial services domain · Azure · Semantic Kernel · MCP  
-[GitHub](https://github.com/Daisonoio) · [LinkedIn](https://linkedin.com/in/yourprofile)
+[GitHub](https://github.com/Daisonoio) · [LinkedIn](https://www.linkedin.com/in/lucameli/)
