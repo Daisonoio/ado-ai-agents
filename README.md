@@ -93,8 +93,7 @@ capabilities to activate. The agent does the rest.
   run. Documenting all sections simultaneously prevents granular review, gap
   correction, and clean error recovery.
 
-→ [View AGENTS.md](./agents/wiki-agent/AGENTS.md)  
-→ [Example output](./docs/example-output.md)
+→ [View AGENTS.md](./agents/wiki-agent/AGENTS.md)
 
 ---
 
@@ -291,7 +290,6 @@ ado-ai-agents/
 │       └── creating-presets.md        ← guide for contributors
 ├── docs/
 │   ├── path-chaining-strategy.md      ← technical deep dive on path resolution
-│   └── example-output.md             ← representative sample output (fictional data)
 └── README.md
 ```
 
