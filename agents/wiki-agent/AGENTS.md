@@ -89,7 +89,7 @@ Use this table only to **override or supplement** automatic discovery:
 |---|---|---|---|
 | _(leave empty for autodiscovery, or add rows to override)_ | | | |
 
-**If left empty**, the agent performs autodiscovery at Step 1 and presents
+**If left empty**, the agent performs autodiscovery at Step 1c and presents
 the discovered sections to the user before proceeding.
 
 **If populated**, the agent uses only the sections listed here and skips autodiscovery.
@@ -100,6 +100,7 @@ Field guide (when populating manually):
 - **Namespace prefix**: root namespace for this section (e.g. `MyApp.Payments`).
   Leave empty if not applicable.
 - **Description**: one sentence describing what this section does.
+
 ## C3 — Page Schema
 
 Defines which wiki pages the agent generates, what each page must contain,
@@ -285,7 +286,7 @@ non-obvious or their misuse produces hard-to-diagnose failures.
 
 Use this tool after drafting page content in memory and before calling
 `create_wiki_page`. It reviews the drafted content against the style guide
-rules loaded in Step 0 and returns a revised version.
+rules loaded in Step 0b and returns a revised version.
 
 When to call it:
 - After drafting the content for any `dev`-owned page
@@ -455,6 +456,7 @@ Before creating any page, the agent must verify:
 
 If any check fails, the agent corrects the draft before creating the page.
 These checks are mandatory and must never be skipped.
+
 ## S5 — Workflow
 
 ### Step 0 — Validate configuration and read the style guide
@@ -591,8 +593,8 @@ Stop and report to the user:
 
 Do not attempt to guess section boundaries when confidence is low.
 Incorrect section boundaries produce incomplete or wrong documentation.
-### Step 2 — Resolve the exact parent page path
 
+### Step 2 — Resolve the exact parent page path
 Call `get_wiki_structure` and locate the entry for `<WIKI_DOCS_PATH>`.
 Extract its exact `path` value as returned by the API and store it as `PARENT_PATH`.
 Do not guess or reconstruct this path manually.
@@ -690,10 +692,10 @@ Never read files outside `SOURCE_PATH` unless a direct import or dependency
 reference in a Priority 1 file requires it to resolve a type or interface definition.
 
 **First obligation (if `ef_core` enabled):** build the complete setup table
-inventory as defined in the DB table inventory rules in S4. 
+inventory as defined in the DB table documentation rules in S4.2. 
 
 **Second obligation (if `privileges` enabled):** scan for all four privilege
-evidence signals as defined in the Privileges page rules in S4.
+evidence signals as defined in the privilege detection rules in S4.4.
 
 Then extract:
 - Classes and interfaces with their responsibilities
