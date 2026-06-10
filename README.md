@@ -318,4 +318,4 @@ on writing effective content hints, and instructions for submitting a pull reque
 
 Luca — Senior .NET Backend Developer, AI-integrated systems  
 Insurance and financial services domain · Azure · Semantic Kernel · MCP  
-[GitHub](https://github.com/Daisonoio) · [LinkedIn](https://linkedin.com/in/yourprofile)
+[GitHub](https://github.com/Daisonoio) · [LinkedIn](https://www.linkedin.com/in/lucameli/)
