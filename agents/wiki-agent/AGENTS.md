@@ -19,13 +19,6 @@ tools:
   - query_work_items
 ---
 
-> **Portfolio note**: This agent was originally built for a production .NET enterprise
-> platform. All company-specific references have been replaced with generic placeholders.
-> The architecture profile, page schema, and active modules system makes it fully
-> adaptable to any project structure, stack, and team convention.
-
----
-
 # CONFIGURATION
 
 ---
@@ -595,6 +588,7 @@ Do not attempt to guess section boundaries when confidence is low.
 Incorrect section boundaries produce incomplete or wrong documentation.
 
 ### Step 2 — Resolve the exact parent page path
+
 Call `get_wiki_structure` and locate the entry for `<WIKI_DOCS_PATH>`.
 Extract its exact `path` value as returned by the API and store it as `PARENT_PATH`.
 Do not guess or reconstruct this path manually.
@@ -635,7 +629,7 @@ is found in Step 5.
 
 _Active only when `traceability` module is enabled._
 
-After reading work items and source code (Step 5), build an internal traceability
+After Step 5 has been completed, build an internal traceability
 index mapping each Done work item to specific code artifacts.
 
 Cross-reference signals in order of reliability:
@@ -692,10 +686,10 @@ Never read files outside `SOURCE_PATH` unless a direct import or dependency
 reference in a Priority 1 file requires it to resolve a type or interface definition.
 
 **First obligation (if `ef_core` enabled):** build the complete setup table
-inventory as defined in the DB table documentation rules in S4.2. 
+inventory as defined in the content hint interpretation rules in S4.2.
 
 **Second obligation (if `privileges` enabled):** scan for all four privilege
-evidence signals as defined in the privilege detection rules in S4.4.
+evidence signals as defined in the active modules rules in S4.4
 
 Then extract:
 - Classes and interfaces with their responsibilities
