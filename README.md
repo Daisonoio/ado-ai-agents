@@ -258,7 +258,7 @@ If C2.2 is empty (autodiscovery mode), the agent will first read the repository
 structure, present the sections it found, and ask you to confirm which one to
 document before proceeding.
 
-The agent runs nine steps and produces a Documentation Report at the end listing
+The agent runs ten steps and produces a Documentation Report at the end listing
 pages created, gaps found, and any errors with recovery actions.
 
 ### Step 9 — Review the output
@@ -289,7 +289,7 @@ ado-ai-agents/
 │       ├── feature_module.md          ← feature module preset
 │       └── creating-presets.md        ← guide for contributors
 ├── docs/
-│   ├── path-chaining-strategy.md      ← technical deep dive on path resolution
+│   └── path-chaining-strategy.md      ← technical deep dive on path resolution
 └── README.md
 ```
 
