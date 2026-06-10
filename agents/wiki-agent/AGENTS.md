@@ -813,13 +813,13 @@ Example second run on "Payments": `<PAGE_PREFIX> Payments <UNIT_LABEL_SINGULAR> 
 1. Determine versioned titles for all pages in scope.
 2. Draft complete content for all pages in memory.
 3. For each `dev`-owned page, call `analyze_and_revise_wiki_content` as defined
-   in S3. Use the returned content for all subsequent steps. Then apply any
-   remaining style guide rules not already addressed by the tool.
+   in S3 (Tool Usage Rules). Use the returned content for all subsequent steps.
+   Then apply any remaining style guide rules not already addressed by the tool.
 4. Run the completeness enforcement checks defined in S4.5 on the final drafted content.
 5. Execute creation in the order defined by the C3.2 hierarchy table.
-5. After each successful `create_wiki_page` call, store the returned `path` value.
+6. After each successful `create_wiki_page` call, store the returned `path` value.
    Use it as the base for all child page paths.
-6. If a page creation fails:
+7. If a page creation fails:
    - Mark the page status as FAILED in the Step 9 report.
    - Mark all its direct and indirect children as PARENT_FAILED — do not attempt
      to create them. PARENT_FAILED is distinct from SKIPPED:
