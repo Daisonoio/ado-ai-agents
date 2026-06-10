@@ -43,4 +43,6 @@ Set C3.0 Mode to `preset`.
 - The `config` page uses EF Core scanning exclusively. If your project does not
   use EF Core, disable the `ef_core` module and remove or replace the `config` page.
 - DB table names are always written without schema prefix (schema stripping rule).
-  See `docs/path-chaining-strategy.md` for background on this decision.
+  This is a design decision in the agent spec (S3 — DB table documentation rules),
+  not related to path resolution. See `docs/path-chaining-strategy.md` for the
+  separate topic of wiki path construction.

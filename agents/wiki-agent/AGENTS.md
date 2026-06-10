@@ -276,6 +276,50 @@ where the guide is silent.
 
 ---
 
+## S2.5 — Tool Usage Rules
+
+The following tools require explicit usage rules because their behavior is
+non-obvious or their misuse produces hard-to-diagnose failures.
+
+### `analyze_and_revise_wiki_content`
+
+Use this tool after drafting page content in memory and before calling
+`create_wiki_page`. It reviews the drafted content against the style guide
+rules loaded in Step 0 and returns a revised version.
+
+When to call it:
+- After drafting the content for any `dev`-owned page
+- Before the completeness enforcement check in S3.5
+
+When not to call it:
+- On placeholder-only pages (non-`dev` owned pages with ownership headers)
+- On the Setup page when owned by a non-`dev` team — the content is intentionally
+  minimal and does not benefit from revision
+
+The tool may return the content unchanged if no style violations are found.
+Always use the returned content for the `create_wiki_page` call, even if unchanged.
+
+### `invalidate_cache`
+
+The MCP server caches wiki structure and page content to reduce API calls.
+Stale cache entries can cause the agent to operate on outdated wiki state —
+for example, missing a page that was just created, or reading an old version
+of the style guide.
+
+When to call it:
+- At the start of Step 2, before calling `get_wiki_structure` for path resolution
+- At the start of Step 3, before scanning existing wiki pages
+- If `get_wiki_structure` returns a result that appears inconsistent with a
+  previous successful `create_wiki_page` call in the same run
+
+When not to call it:
+- Between individual `create_wiki_page` calls in the same run — the cache is
+  updated automatically after each write
+- More than once per workflow step — repeated invalidation within the same step
+  adds latency without benefit
+
+---
+
 ## S3 — Content Generation Rules
 
 These rules define how the agent generates content for any page defined in C3,
@@ -427,6 +471,17 @@ Read the CONFIGURATION block (C1 through C4) and extract:
   `<DISCOVERY_SIGNAL>`, and the C2.2 registry (may be empty)
 - Page schema (mode, definitions, hierarchy) from C3
 - Active modules from C4
+
+Validate placeholder completeness (fail-early):
+Scan all values in C1 for any string matching the pattern `<...>` (angle-bracket
+placeholder). If any placeholder is found, stop immediately and report:
+- The name of each unresolved placeholder
+- The section (C1, C2, C3, C4) where it was found
+- That the agent cannot proceed until all placeholders are replaced with real values
+
+Do not attempt any tool call — including `read_wiki_page` for the style guide —
+until this check passes. A placeholder left in place will produce malformed paths,
+incorrect page titles, or silent failures that are difficult to diagnose.
 
 Validate module dependencies:
 - If `privileges: true` and `ef_core: false` → disable `privileges`, log conflict in Step 9.
@@ -598,7 +653,37 @@ Only HIGH or MEDIUM confidence authorizes inline references.
 
 ### Step 5 — Read source code
 
-Read all files from `<SOURCE_BRANCH>` under the `SOURCE_PATH` resolved in Step 1.
+Read files from `<SOURCE_BRANCH>` under the `SOURCE_PATH` resolved in Step 1.
+
+#### Context window strategy for `read_all_files_from_branch`
+
+On large codebases, `read_all_files_from_branch` may return more content than
+the context window can hold. Apply the following prioritization to stay within
+context limits:
+
+**Priority 1 — Always read first:**
+- Controller and endpoint definition files (API surface)
+- DbContext and IEntityTypeConfiguration files (EF Core table inventory)
+- Migration files scoped to the target section (table and column definitions)
+- Seeding files and privilege constant files
+
+**Priority 2 — Read if context allows:**
+- Repository and handler classes in the section namespace
+- Use case and command/query handler files
+- Interface definitions and dependency registrations
+
+**Priority 3 — Read only if a specific content hint requires it:**
+- Test files (only if the content hint explicitly references test coverage)
+- Infrastructure configuration files not related to the section
+- Shared utility classes outside the section namespace
+
+If context is exhausted before Priority 2 or 3 files are read:
+- Complete the current priority tier before stopping
+- Document which files were not read in the Step 9 report under "Source coverage"
+- Flag any content hints that could not be satisfied due to unread files as gaps
+
+Never read files outside `SOURCE_PATH` unless a direct import or dependency
+reference in a Priority 1 file requires it to resolve a type or interface definition.
 
 **First obligation (if `ef_core` enabled):** build the complete setup table
 inventory as defined in the DB table inventory rules in S3.
@@ -659,6 +744,10 @@ Add this section? Reply YES to include it, NO to skip.
 5. If confirmed YES, append to the relevant page following canonical formatting.
 6. Present multiple candidates one at a time, confirmed individually.
 7. If no candidates detected, skip silently.
+8. Cap: present a maximum of 3 candidates per run. If more than 3 candidates are
+   detected, present only the 3 that appear in the highest number of already-documented
+   sections. Log the remaining candidates in the Step 9 report under
+   "Extension candidates deferred" — the user can re-run the agent to review them.
 
 ### Hard constraints (strictly enforced, no exceptions)
 
@@ -688,10 +777,16 @@ Never produce output not defined in this specification.
 #### Versioning protocol
 
 For each page independently, before creation:
-1. Search for any existing page whose title matches the intended base title
-   (with or without version suffix) under `<WIKI_DOCS_PATH>`.
-2. A page with no suffix is implicitly V1. Identify the highest version present.
-3. Assign the next version number. If no existing page found, use no suffix.
+1. Construct the intended base path for the page by combining `PARENT_PATH`
+   (or the parent page path) with the base title (without any version suffix).
+2. Call `get_wiki_structure` and search for pages whose **full path** matches
+   or starts with the intended base path. Do not match on title alone — two pages
+   in different locations can share the same title.
+3. From the matching pages, extract any version suffixes (V2, V3...). A page
+   with no suffix is implicitly V1.
+4. Identify the highest version number present.
+5. Assign the next version number. If no matching page is found at that path,
+   use no suffix.
 
 Version suffix format: space + `V` + integer starting at 2, no zero-padding.
 Example second run on "Payments": `<PAGE_PREFIX> Payments <UNIT_LABEL_SINGULAR> V2`
@@ -715,8 +810,16 @@ Example second run on "Payments": `<PAGE_PREFIX> Payments <UNIT_LABEL_SINGULAR> 
 4. Execute creation in the order defined by the C3.2 hierarchy table.
 5. After each successful `create_wiki_page` call, store the returned `path` value.
    Use it as the base for all child page paths.
-6. If a page creation fails, skip all its children. Continue with independent pages.
-   Report all failures in Step 9.
+6. If a page creation fails:
+   - Mark the page status as FAILED in the Step 9 report.
+   - Mark all its direct and indirect children as PARENT_FAILED — do not attempt
+     to create them. PARENT_FAILED is distinct from SKIPPED:
+     - SKIPPED: page was not attempted because its required module is disabled
+       or its condition was not met. This is expected behavior.
+     - PARENT_FAILED: page was not attempted because a required ancestor failed
+       to create. This is an error condition requiring user intervention.
+   - Continue creating independent pages (siblings with a different parent) if possible.
+   - Report all FAILED and PARENT_FAILED pages in Step 9 with the originating error.
 
 Each page must be created exactly once, fully populated, in a single `create_wiki_page`
 call. Never create empty pages. Never update a page after creation.
@@ -769,7 +872,13 @@ call. Never create empty pages. Never update a page after creation.
 **Pages created:**
 | Page ID | Full title | Parent | Status |
 |---|---|---|---|
-| <id> | <title> | <parent title> | Created / Failed / Skipped |
+| <id> | <title> | <parent title> | Created / Failed / Skipped / Parent_Failed |
+
+Status values:
+-  Created: page written to wiki successfully
+-  Failed: page creation attempted and failed — see Errors section
+-  Skipped: page not attempted — required module disabled or condition not met (expected)
+-  Parent_Failed: page not attempted — a required ancestor page failed (error condition)
 
 **Subpage hierarchy:**
 <PAGE_PREFIX> {name} <UNIT_LABEL_SINGULAR> [V<N>]
@@ -789,6 +898,15 @@ call. Never create empty pages. Never update a page after creation.
 
 **Extra sections skipped:**
 - <section>: skipped
+
+**Extension candidates deferred (cap exceeded):**
+- <section>: found in <N> documented sections — deferred, re-run to review
+
+**Source coverage (read_all_files_from_branch):**
+- Priority 1 files read: <count>
+- Priority 2 files read: <count> (or "context exhausted before Priority 2")
+- Priority 3 files read: <count> (or "not reached")
+- Unread files affecting content hints: <file: hint affected> or "none"
 
 **Errors:**
 - <step>: <error type> — <recovery action taken>
