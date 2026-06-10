@@ -37,7 +37,7 @@ Set C3.0 Mode to `preset`.
 ## Notes
 
 - The `privileges` page is conditional: generated only if privilege evidence is
-  found in source code (see S3 privilege evidence detection rules).
+  found in source code (see S4.4 — Active modules and content hints interaction).
 - The `setup` page is owned by `qa` by default. If your team has no QA separation,
   change the owner to `dev` — the agent will fully populate it from source.
 - The `config` page uses EF Core scanning exclusively. If your project does not
