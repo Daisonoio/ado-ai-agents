@@ -1,18 +1,21 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
 
-/ado-ai-agents/.vs
-/.vs/ado-ai-agents/CopilotIndices/18.7.1197.42269/CodeChunks.db
-/.vs/ado-ai-agents/CopilotIndices/18.7.1197.42269/CodeChunks.db-shm
-/.vs/ado-ai-agents/CopilotIndices/18.7.1197.42269/CodeChunks.db-wal
-/.vs/ado-ai-agents/CopilotIndices/18.7.1197.42269/SemanticSymbols.db
-/.vs/ado-ai-agents/CopilotIndices/18.7.1197.42269/SemanticSymbols.db-shm
-/.vs/ado-ai-agents/CopilotIndices/18.7.1197.42269/SemanticSymbols.db-wal
-/.vs/slnx.sqlite
-/.vs/ado-ai-agents.slnx/FileContentIndex/596d5f66-3ce7-41ba-9163-4fd604833cab.vsidx
-/.vs/ado-ai-agents.slnx/FileContentIndex/f59f18fe-ea76-4f6f-887c-b4bcf0187de7.vsidx
-/.vs/ado-ai-agents.slnx/v18/DocumentLayout.backup.json
-/.vs/ado-ai-agents.slnx/FileContentIndex/468d022c-cdf5-43e7-86eb-816ac32d564a.vsidx
-*.vsidx
-/.vs/slnx.sqlite
+# Visual Studio Code
+.vscode/
+
+# JetBrains
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+bin/
+obj/
+out/
